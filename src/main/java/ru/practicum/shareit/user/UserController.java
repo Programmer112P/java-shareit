@@ -6,8 +6,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.CreateUserDto;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.mapper.DtoToUserMapper;
-import ru.practicum.shareit.user.mapper.UserToDtoMapper;
+import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 
 import javax.validation.Valid;
@@ -20,21 +19,19 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    private final UserToDtoMapper userToDtoMapper;
-    private final DtoToUserMapper dtoToUserMapper;
+    private final UserMapper userMapper;
 
     @Autowired
-    public UserController(UserService userService, UserToDtoMapper userToDtoMapper, DtoToUserMapper dtoToUserMapper) {
+    public UserController(UserService userService, UserMapper userMapper) {
         this.userService = userService;
-        this.userToDtoMapper = userToDtoMapper;
-        this.dtoToUserMapper = dtoToUserMapper;
+        this.userMapper = userMapper;
     }
 
     @GetMapping("/{userId}")
     public UserDto getById(@PathVariable(name = "userId") final Long userId) {
         log.info("UserController: запрос на получение пользователя с id {}", userId);
         User user = userService.getById(userId);
-        UserDto response = userToDtoMapper.userToDto(user);
+        UserDto response = userMapper.userToDto(user);
         log.info("UserController: выполнен запрос на получение пользователя с id {}", userId);
         return response;
     }
@@ -44,7 +41,7 @@ public class UserController {
     public List<UserDto> getAll() {
         log.info("UserController getAll: запрос на получение всех пользователей");
         List<User> users = userService.getAll();
-        List<UserDto> response = userToDtoMapper.userListToDtoList(users);
+        List<UserDto> response = userMapper.userListToDtoList(users);
         log.info("UserController getAll: запрос на получение всех пользователей");
         return response;
     }
@@ -52,9 +49,9 @@ public class UserController {
     @PostMapping()
     public UserDto create(@RequestBody @Valid final CreateUserDto createUserDto) {
         log.info("UserController create: запрос на создание пользователя {}", createUserDto);
-        User userToCreate = dtoToUserMapper.dtoToUser(createUserDto);
+        User userToCreate = userMapper.dtoToUser(createUserDto);
         User createdUser = userService.create(userToCreate);
-        UserDto response = userToDtoMapper.userToDto(createdUser);
+        UserDto response = userMapper.userToDto(createdUser);
         log.info("UserController create: выполнен запрос на создание пользователя {}", response);
         return response;
     }
@@ -64,9 +61,9 @@ public class UserController {
             @RequestBody final CreateUserDto createUserDto,
             @PathVariable(name = "userId") final Long userId) {
         log.info("UserController update: запрос на обновление пользователя с id {}", userId);
-        User newUser = dtoToUserMapper.dtoToUser(createUserDto);
+        User newUser = userMapper.dtoToUser(createUserDto);
         User updatedUser = userService.update(newUser, userId);
-        UserDto response = userToDtoMapper.userToDto(updatedUser);
+        UserDto response = userMapper.userToDto(updatedUser);
         log.info("UserController update: выполнен запрос на обновление пользователя с id {}", userId);
         return response;
     }

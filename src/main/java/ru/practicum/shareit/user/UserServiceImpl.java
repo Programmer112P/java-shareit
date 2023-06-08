@@ -8,17 +8,16 @@ import ru.practicum.shareit.shared.exception.NotFoundException;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService {
 
-    private final FakeUserRepository repository;
+    private final EmbeddedUserRepository repository;
 
     @Autowired
-    public UserServiceImpl(FakeUserRepository repository) {
+    public UserServiceImpl(EmbeddedUserRepository repository) {
         this.repository = repository;
     }
 
@@ -65,42 +64,37 @@ public class UserServiceImpl implements UserService {
             String message = String.format("В запросе на обновление пользователя задан несуществующий id %d", userId);
             throw new NotFoundException(message);
         }
-        User userToUpdate = optionalUser.get();
+        User userToUpdate = new User(optionalUser.get());
         String newName = newUser.getName();
         String newEmail = newUser.getEmail();
-        if (newEmail != null) {
-            boolean isEmailOccupied = validateEmail(newEmail, userId);
-            if (isEmailOccupied) {
-                String message = String.format(
-                        "При запросе на обновление пользователя передан уже занятый email %s", newEmail);
-                throw new ConflictException(message);
-            }
-            userToUpdate.setEmail(newEmail);
-        }
         if (newName != null) {
             userToUpdate.setName(newName);
         }
-        User updatedUser = repository.update(userToUpdate, userId);
+        if (newEmail != null) {
+            userToUpdate.setEmail(newEmail);
+        }
+        Optional<User> updatedUser = repository.update(userToUpdate);
+        if (updatedUser.isEmpty()) {
+            String message = String.format("В запросе на обновление пользователя передан занятый email %s", newEmail);
+            throw new ConflictException(message);
+        }
         log.info("UserService update: выполнен запрос на обновление пользователя с id {}", userId);
-        return updatedUser;
+        return updatedUser.get();
     }
 
+    /*
+     * Мне не нравится концептуально возвращать 200, когда передан несуществующий id
+     * Это значит, что где-то в коде есть ошибка, но мы просто закрываем на эту возможность глаза
+     * Поэтому я сначала проверяю есть ли такой user вообще
+     * */
     @Override
     public void delete(Long userId) {
         log.info("UserService delete: запрос на удаление пользователя с id {}", userId);
-        Optional<User> deletedUser = repository.delete(userId);
-        if (deletedUser.isEmpty()) {
-            String message = String.format("При удалении пользователя передан несуществующий id %d", userId);
+        Optional<User> optionalUser = repository.getById(userId);
+        if (optionalUser.isEmpty()) {
+            String message = String.format("В запросе на удаление пользователя передан несуществующий id %d", userId);
             throw new NotFoundException(message);
         }
-    }
-
-    //По идее можно настроить базу данных так, чтобы она сама не пуская дупликаты (сделать Unique)
-    //Но здесь приходится делать валидацию руками
-    private boolean validateEmail(String email, Long userId) {
-        List<User> users = getAll();
-        return users
-                .stream()
-                .anyMatch(user -> user.getEmail().equals(email) && !Objects.equals(user.getId(), userId));
+        repository.delete(userId);
     }
 }

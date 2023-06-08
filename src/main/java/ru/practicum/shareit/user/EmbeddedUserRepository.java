@@ -6,18 +6,17 @@ import ru.practicum.shareit.user.model.User;
 import java.util.*;
 
 @Repository
-public class FakeUserRepository {
+public class EmbeddedUserRepository {
 
     private final Map<Long, User> repository = new HashMap<>();
-    private long idGenerator = 1;
+    private long idGenerator = 0;
 
     public Optional<User> getById(final Long userId) {
         User user = repository.get(userId);
         if (user == null) {
             return Optional.empty();
-        } else {
-            return Optional.of(user);
         }
+        return Optional.of(user);
     }
 
     public List<User> getAll() {
@@ -31,20 +30,23 @@ public class FakeUserRepository {
         if (isEmailAlreadyOccupied) {
             return Optional.empty();
         }
-        userToCreate.setId(idGenerator++);
+        userToCreate.setId(++idGenerator);
         repository.put(userToCreate.getId(), userToCreate);
         return Optional.of(userToCreate);
     }
 
-    public User update(User userToUpdate, Long userId) {
-        return repository.put(userId, userToUpdate);
+    public Optional<User> update(User userToUpdate) {
+        for (Map.Entry<Long, User> entry : repository.entrySet()) {
+            if (!entry.getKey().equals(userToUpdate.getId()) &&
+                    entry.getValue().getEmail().equals(userToUpdate.getEmail())) {
+                return Optional.empty();
+            }
+        }
+        repository.put(userToUpdate.getId(), userToUpdate);
+        return Optional.of(userToUpdate);
     }
 
-    public Optional<User> delete(Long userId) {
-        User deletedUser = repository.remove(userId);
-        if (deletedUser == null) {
-            return Optional.empty();
-        }
-        return Optional.of(deletedUser);
+    public void delete(Long userId) {
+        repository.remove(userId);
     }
 }

@@ -8,7 +8,7 @@ import ru.practicum.shareit.item.model.Item;
 import java.util.List;
 
 @Mapper(componentModel = "spring")
-public interface DtoToItemMapper {
+public interface ItemMapper {
 
     Item createDtoToModel(CreateItemDto createItemDto);
 
@@ -17,4 +17,8 @@ public interface DtoToItemMapper {
     Item updateDtoToModel(ItemDto itemDto);
 
     List<Item> updateDtoListToModelList(List<ItemDto> itemDtoList);
+
+    ItemDto modelToDto(Item item);
+
+    List<ItemDto> modelListToDtoList(List<Item> itemList);
 }

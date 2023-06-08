@@ -13,6 +13,12 @@ import java.util.Objects;
 @Builder
 public class User {
 
+    public User(User user) {
+        this.id = user.getId();
+        this.name = user.getName();
+        this.email = user.getEmail();
+    }
+
     private Long id;
 
     private String name;

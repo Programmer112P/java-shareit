@@ -5,36 +5,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.shared.exception.NotFoundException;
-import ru.practicum.shareit.user.FakeUserRepository;
+import ru.practicum.shareit.user.EmbeddedUserRepository;
 import ru.practicum.shareit.user.model.User;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Slf4j
 public class ItemServiceImpl implements ItemService {
 
-    private final FakeItemRepository itemRepository;
-    private final FakeUserRepository userRepository;
+    private final EmbeddedItemRepository itemRepository;
+    private final EmbeddedUserRepository userRepository;
 
     @Autowired
-    public ItemServiceImpl(FakeItemRepository repository, FakeUserRepository userRepository) {
+    public ItemServiceImpl(EmbeddedItemRepository repository, EmbeddedUserRepository userRepository) {
         this.itemRepository = repository;
         this.userRepository = userRepository;
     }
 
     /*
-     * Мне нужно проверить существование пользователя, и только после этого достать все items
-     * Я так и не понял как правильно обработать эту ситуацию
-     * У меня 2 сущности завязаны друг на друга, и мне нужно вызывать чужой репозиторий
-     * Я может слишком далеко заглядываю, но если когда-нибудь мне надо будет писать микросервисы,
-     * то чужой репозиторий просто будет недоступен, так как это будут 2 отдельных приложения
-     * И плюс к этому надо делать 2 запроса к БД, сначала на проверку, и только потом на получение данных
-     * Даже если допустим сделать нативный SQL, а не JPA, все равно я не понимаю как мне в один запрос это поместить
-     * */
+     * Мне не нравится возвращать просто пустой список, если пользователя не существует
+     * У нас где-то в логике программы есть ошибка, а возвращается 200
+     *  */
     @Override
     public List<Item> getAllByUserId(final Long userId) {
         log.info("ItemService getAllByUserId: запрос на получение всех вещей пользователя с id {}", userId);
@@ -59,12 +51,6 @@ public class ItemServiceImpl implements ItemService {
         return item;
     }
 
-    /*
-     * Та же история, приходится ходить дважды к БД, чтобы все проверить
-     * Вопрос есть сразу на будущее с JPA
-     * Если у меня будет manyToOne связь, можно ли ещё хранить в Item просто OwnerId для сохранения в БД
-     * А поле Owner будет только для чтения, если нужны будут ещё какие-то данные о владельце
-     * */
     @Override
     public Item create(final Item itemToCreate, final Long userId) {
         log.info("ItemService create: запрос на создание вещи {} с id пользователя {}", itemToCreate, userId);
@@ -88,7 +74,7 @@ public class ItemServiceImpl implements ItemService {
             String message = String.format("При запросе на обновление вещи передан несуществующий id %d", itemId);
             throw new NotFoundException(message);
         }
-        Item itemToUpdate = optionalItem.get();
+        Item itemToUpdate = new Item(optionalItem.get());
         if (!Objects.equals(itemToUpdate.getOwner().getId(), userId)) {
             String message = String.format("При запросе на обновление вещи передан несоответствующий вещи с id %d " +
                     "пользователь с id %d", itemId, userId);
@@ -106,7 +92,7 @@ public class ItemServiceImpl implements ItemService {
         if (description != null) {
             itemToUpdate.setDescription(description);
         }
-        Item updatedItem = itemRepository.update(itemId, itemToUpdate);
+        Item updatedItem = itemRepository.update(itemToUpdate);
         log.info("ItemService update: выполнен запрос на обновление вещи с id {}", itemId);
         return updatedItem;
     }
@@ -115,11 +101,11 @@ public class ItemServiceImpl implements ItemService {
     public List<Item> search(final String text) {
         log.info("ItemService search: запрос на поиск вещей по тексту \"{}\"", text);
         List<Item> items;
-        if (!text.isBlank()) {
+        if (text == null || text.isBlank()) {
+            return Collections.emptyList();
+        } else {
             String lowerCaseText = text.toLowerCase();
             items = itemRepository.search(lowerCaseText);
-        } else {
-            items = new ArrayList<>();
         }
         log.info("ItemService search: выполнен запрос на поиск вещей по тексту \"{}\"", text);
         return items;

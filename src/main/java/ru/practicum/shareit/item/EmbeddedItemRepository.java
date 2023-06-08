@@ -7,13 +7,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
-public class FakeItemRepository {
+public class EmbeddedItemRepository {
 
     private final Map<Long, Item> repository = new HashMap<>();
-    private long idGenerator = 1;
+    private long idGenerator = 0;
 
-    //Быстрее линейного поиска не придумал, разве что хранить в treemap отсортированные по id пользователей
-    //И индекс в бд добавить
     public List<Item> getAllByUserId(Long userId) {
         return repository.values()
                 .stream()
@@ -31,16 +29,16 @@ public class FakeItemRepository {
     }
 
     public Item create(Item itemToCreate) {
-        itemToCreate.setId(idGenerator++);
+        itemToCreate.setId(++idGenerator);
         repository.put(itemToCreate.getId(), itemToCreate);
         return itemToCreate;
     }
 
-    public Item update(Long itemId, Item itemToUpdate) {
-        return repository.put(itemId, itemToUpdate);
+    public Item update(Item itemToUpdate) {
+        repository.put(itemToUpdate.getId(), itemToUpdate);
+        return repository.get(itemToUpdate.getId());
     }
 
-    //База данных умеет искать по словам, поэтому я поместил логику по поиску в репозиторий
     public List<Item> search(String text) {
         List<Item> result = new ArrayList<>();
         for (Item item : repository.values()) {

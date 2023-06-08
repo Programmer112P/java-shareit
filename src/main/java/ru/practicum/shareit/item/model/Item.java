@@ -14,6 +14,15 @@ import java.util.Objects;
 @NoArgsConstructor
 public class Item {
 
+    public Item(Item item) {
+        this.id = item.getId();
+        this.name = item.getName();
+        this.description = item.getDescription();
+        this.available = item.getAvailable();
+        this.owner = item.getOwner();
+        this.request = item.getRequest();
+    }
+
     private Long id;
 
     private String name;
