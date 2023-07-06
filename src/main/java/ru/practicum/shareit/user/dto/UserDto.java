@@ -1,31 +1,31 @@
-package ru.practicum.shareit.item.dto;
+package ru.practicum.shareit.user.dto;
 
 import lombok.*;
 
+import javax.validation.constraints.Email;
 import java.util.Objects;
 
 @Getter
 @Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 @Builder
-public class ItemDto {
+public class UserDto {
 
     private Long id;
 
     private String name;
 
-    private String description;
-
-    private Boolean available;
+    @Email
+    private String email;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ItemDto itemDto = (ItemDto) o;
-        return Objects.equals(id, itemDto.id);
+        UserDto userDto = (UserDto) o;
+        return Objects.equals(id, userDto.id);
     }
 
     @Override
