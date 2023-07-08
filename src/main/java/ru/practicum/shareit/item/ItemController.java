@@ -4,12 +4,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.comment.dto.CommentDto;
+import ru.practicum.shareit.comment.dto.CreateCommentDto;
+import ru.practicum.shareit.comment.mapper.CommentMapper;
+import ru.practicum.shareit.comment.model.Comment;
 import ru.practicum.shareit.item.dto.CreateItemDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @Slf4j
@@ -20,21 +26,21 @@ public class ItemController {
 
     private final ItemService itemService;
     private final ItemMapper itemMapper;
+    private final CommentMapper commentMapper;
 
     @Autowired
-    public ItemController(ItemService itemService, ItemMapper itemMapper) {
+    public ItemController(ItemService itemService, ItemMapper itemMapper, CommentMapper commentMapper) {
         this.itemService = itemService;
         this.itemMapper = itemMapper;
+        this.commentMapper = commentMapper;
     }
 
-    /*
-     * Вопрос по контроллерам - что лучше возвращать - ResponseEntity или просто Dto?
-     * */
     @GetMapping
     public List<ItemDto> getAllByUserId(@RequestHeader("X-Sharer-User-Id") final Long userId) {
         log.info("ItemController getAll: запрос на получение всех вещей от пользователя с id {}", userId);
         List<Item> itemList = itemService.getAllByUserId(userId);
         List<ItemDto> response = itemMapper.modelListToDtoList(itemList);
+        response.sort(Comparator.comparing(ItemDto::getId));//В тестах иначе не проходит, по идее это не нужно
         log.info("ItemController getAll: выполнен запрос на получение всех вещей от пользователя с id {}", userId);
         return response;
     }
@@ -81,6 +87,20 @@ public class ItemController {
         List<Item> items = itemService.search(text);
         List<ItemDto> response = itemMapper.modelListToDtoList(items);
         log.info("ItemController search: выполнен запрос на поиск вещей по тексту \"{}\"", text);
+        return response;
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto addComment(
+            @RequestHeader("X-Sharer-User-Id") final Long userId,
+            @PathVariable(name = "itemId") final Long itemId,
+            @RequestBody @Valid CreateCommentDto createCommentDto) {
+        log.info("ItemController search: запрос на оставление комментария от пользователя {}", userId);
+        createCommentDto.setCreated(LocalDateTime.now());
+        Comment commentToCreate = commentMapper.createDtoToModel(createCommentDto);
+        Comment createdComment = itemService.addComment(userId, itemId, commentToCreate);
+        CommentDto response = commentMapper.modelToDto(createdComment);
+        log.info("ItemController search: выполнен запрос на оставление комментария от пользователя {}", userId);
         return response;
     }
 }
