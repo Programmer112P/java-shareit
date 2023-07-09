@@ -28,7 +28,6 @@ CREATE TABLE IF NOT EXISTS items
     request_id   BIGINT REFERENCES request (id)
 );
 
-DROP TYPE IF EXISTS status CASCADE;
 CREATE TYPE status AS ENUM (
     'WAITING',
     'APPROVED',
