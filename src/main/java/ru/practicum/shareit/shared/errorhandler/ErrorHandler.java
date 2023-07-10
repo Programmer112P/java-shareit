@@ -115,6 +115,6 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.I_AM_A_TEAPOT)
     public Map<String, String> handleIllegalArgument(final Exception e) {
-        return Map.of("error", e.getMessage());
+        return Map.of("error", e.toString());
     }
 }
