@@ -21,7 +21,6 @@ import ru.practicum.shareit.shared.exception.ConflictException;
 import ru.practicum.shareit.shared.exception.NotFoundException;
 
 import javax.validation.ConstraintViolationException;
-import java.util.Map;
 
 @Slf4j
 @RestControllerAdvice
