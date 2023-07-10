@@ -21,6 +21,7 @@ import ru.practicum.shareit.shared.exception.ConflictException;
 import ru.practicum.shareit.shared.exception.NotFoundException;
 
 import javax.validation.ConstraintViolationException;
+import java.util.Map;
 
 @Slf4j
 @RestControllerAdvice
@@ -109,5 +110,11 @@ public class ErrorHandler {
     public BadRequestResponse handleMissingParams(final MissingServletRequestParameterException e) {
         log.error("400 {}", e.getMessage());
         return new BadRequestResponse(e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.I_AM_A_TEAPOT)
+    public Map<String, String> handleIllegalArgument(final Exception e) {
+        return Map.of("error", e.getMessage());
     }
 }
