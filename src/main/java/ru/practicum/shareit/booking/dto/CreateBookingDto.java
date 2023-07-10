@@ -17,13 +17,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class CreateBookingDto {
 
-    public CreateBookingDto(LocalDateTime start, LocalDateTime end, Long itemId) {
-        this.start = start;
-        this.end = end;
-        this.itemId = itemId;
-        this.status = Status.WAITING;
-    }
-
     @NotNull
     @Future
     private LocalDateTime start;

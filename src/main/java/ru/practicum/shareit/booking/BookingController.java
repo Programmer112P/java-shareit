@@ -9,6 +9,7 @@ import ru.practicum.shareit.booking.dto.CreateBookingDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.State;
+import ru.practicum.shareit.request.model.Status;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -34,6 +35,7 @@ public class BookingController {
             @RequestHeader("X-Sharer-User-Id") final Long bookerId) {
         log.info("BookingController createBooking: запрос на бронирование {}", createBookingDto);
         createBookingDto.setBookerId(bookerId);
+        createBookingDto.setStatus(Status.WAITING);
         Booking bookingToCreate = bookingMapper.createDtoToModel(createBookingDto);
         Booking createdBooking = bookingService.create(bookingToCreate);
         BookingDto response = bookingMapper.modelToDto(createdBooking);

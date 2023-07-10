@@ -111,10 +111,4 @@ public class ErrorHandler {
         log.error("400 {}", e.getMessage());
         return new BadRequestResponse(e.getMessage());
     }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.I_AM_A_TEAPOT)
-    public Map<String, String> handleIllegalArgument(final Exception e) {
-        return Map.of("error", e.toString());
-    }
 }
