@@ -32,7 +32,7 @@ public class CreateBookingDto {
     @Future
     private LocalDateTime end;
 
-    @JsonProperty("item_id")
+    @JsonProperty("itemId")
     @NotNull
     private Long itemId;
 
