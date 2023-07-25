@@ -1,8 +1,12 @@
 package ru.practicum.shareit.user.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import ru.practicum.shareit.item.model.Item;
 
+import javax.persistence.*;
 import javax.validation.constraints.Email;
+import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -11,7 +15,13 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Entity
+@Table(name = "users")
 public class User {
+
+    public User(long id) {
+        this.id = id;
+    }
 
     public User(User user) {
         this.id = user.getId();
@@ -19,12 +29,19 @@ public class User {
         this.email = user.getEmail();
     }
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
 
     @Email
     private String email;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner")
+    @ToString.Exclude
+    @JsonIgnore
+    List<Item> items;
 
     @Override
     public boolean equals(Object o) {
