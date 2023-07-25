@@ -9,9 +9,9 @@ import ru.practicum.shareit.booking.dto.CreateBookingDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.State;
-import ru.practicum.shareit.request.model.Status;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 @RestController
@@ -34,8 +34,8 @@ public class BookingController {
             @RequestBody @Valid final CreateBookingDto createBookingDto,
             @RequestHeader("X-Sharer-User-Id") final Long bookerId) {
         log.info("BookingController createBooking: запрос на бронирование {}", createBookingDto);
+        //А как мне не сетать это поле? Оно приходит отдельно хэдером
         createBookingDto.setBookerId(bookerId);
-        createBookingDto.setStatus(Status.WAITING);
         Booking bookingToCreate = bookingMapper.createDtoToModel(createBookingDto);
         Booking createdBooking = bookingService.create(bookingToCreate);
         BookingDto response = bookingMapper.modelToDto(createdBooking);
@@ -68,10 +68,12 @@ public class BookingController {
 
     @GetMapping
     public List<BookingDto> getAllBookingsOfUser(
+            @RequestParam(required = false, defaultValue = "0") @Min(0) final long from,
+            @RequestParam(required = false, defaultValue = "20") @Min(1) final int size,
             @RequestHeader("X-Sharer-User-Id") final Long userId,
             @RequestParam(required = false, defaultValue = "ALL") State state) {
         log.info("BookingController getAllBookingsOfUser: запрос на получение всех броней пользователя {}", userId);
-        List<Booking> bookings = bookingService.getAllBookingsOfUser(userId, state);
+        List<Booking> bookings = bookingService.getAllBookingsOfUser(userId, state, from, size);
         List<BookingDto> response = bookingMapper.modelListToDtoList(bookings);
         log.info("BookingController getAllBookingsOfUser: выполнен запрос на получение всех броней пользователя {}", userId);
         return response;
@@ -81,10 +83,12 @@ public class BookingController {
 
     @GetMapping("/owner")
     public List<BookingDto> getAllBookingsOfUserItems(
+            @RequestParam(required = false, defaultValue = "0") @Min(0) final long from,
+            @RequestParam(required = false, defaultValue = "20") @Min(1) final int size,
             @RequestHeader("X-Sharer-User-Id") final Long userId,
             @RequestParam(required = false, defaultValue = "ALL") State state) {
         log.info("BookingController getAllBookingsOfUser: запрос на получение всех броней на вещи пользователя {}", userId);
-        List<Booking> bookings = bookingService.getAllBookingsOfUserItems(userId, state);
+        List<Booking> bookings = bookingService.getAllBookingsOfUserItems(userId, state, from, size);
         List<BookingDto> response = bookingMapper.modelListToDtoList(bookings);
         log.info("BookingController getAllBookingsOfUser: выполнен запрос на получение всех броней на вещи пользователя {}", userId);
         return response;

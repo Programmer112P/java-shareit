@@ -33,6 +33,8 @@ public class ItemDto {
 
     private GetItemsBookingDto nextBooking;
 
+    private Long requestId;
+
     @JsonProperty("comments")
     List<CommentDto> comments;
 

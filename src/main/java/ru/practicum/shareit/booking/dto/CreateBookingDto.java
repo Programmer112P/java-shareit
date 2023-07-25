@@ -31,5 +31,5 @@ public class CreateBookingDto {
 
     private Long bookerId;
 
-    private Status status;
+    private Status status = Status.WAITING;
 }

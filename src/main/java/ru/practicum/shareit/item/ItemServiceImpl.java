@@ -10,8 +10,11 @@ import ru.practicum.shareit.comment.CommentRepository;
 import ru.practicum.shareit.comment.exception.CommentDeniedException;
 import ru.practicum.shareit.comment.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequestRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.model.Status;
 import ru.practicum.shareit.shared.exception.NotFoundException;
+import ru.practicum.shareit.shared.pagination.OffsetBasedPageRequest;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
@@ -29,24 +32,27 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Autowired
-    public ItemServiceImpl(ItemRepository repository, UserRepository userRepository, BookingRepository bookingRepository, CommentRepository commentRepository) {
+    public ItemServiceImpl(ItemRepository repository, UserRepository userRepository, BookingRepository bookingRepository, CommentRepository commentRepository, ItemRequestRepository itemRequestRepository) {
         this.itemRepository = repository;
         this.userRepository = userRepository;
         this.bookingRepository = bookingRepository;
         this.commentRepository = commentRepository;
+        this.itemRequestRepository = itemRequestRepository;
     }
 
     @Override
     @Transactional
-    public List<Item> getAllByUserId(final Long userId) {
+    public List<Item> getAllByUserId(final Long userId, Long from, Integer size) {
         log.info("ItemService getAllByUserId: запрос на получение всех вещей пользователя с id {}", userId);
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isEmpty()) {
             throw new NotFoundException("При получении списка вещей передан несуществующий id пользователя");
         }
-        List<Item> items = itemRepository.findAllByOwnerId(userId);
+        OffsetBasedPageRequest pageable = new OffsetBasedPageRequest(from, size);
+        List<Item> items = itemRepository.findAllByOwnerId(userId, pageable);
         for (Item item : items) {
             getBookingsOfItem(item);
         }
@@ -96,6 +102,15 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Item create(final Item itemToCreate, final Long userId) {
         log.info("ItemService create: запрос на создание вещи {} с id пользователя {}", itemToCreate, userId);
+        ItemRequest itemRequest = itemToCreate.getRequest();
+        if (itemRequest.getId() != null) {
+            itemRequest = itemRequestRepository.findById(itemRequest.getId()).orElseThrow(() -> {
+                throw new NotFoundException("При запросе на создание вещи передан несуществующий запрос");
+            });
+            itemToCreate.setRequest(itemRequest);
+        } else {
+            itemToCreate.setRequest(null);
+        }
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isEmpty()) {
             String message = String.format("При запросе на создание вещи передан несуществующий id владельца %d", userId);
@@ -122,6 +137,12 @@ public class ItemServiceImpl implements ItemService {
                     "пользователь с id %d", itemId, userId);
             throw new NotFoundException(message);
         }
+        if (newItem.getRequest().getId() != null) {
+            ItemRequest itemRequest = itemRequestRepository.findById(newItem.getRequest().getId()).orElseThrow(() -> {
+                throw new NotFoundException("При запросе на обновление передан несуществующий requestId");
+            });
+            itemToUpdate.setRequest(itemRequest);
+        }
         Boolean available = newItem.getAvailable();
         String name = newItem.getName();
         String description = newItem.getDescription();
@@ -140,14 +161,15 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<Item> search(final String text) {
+    public List<Item> search(final String text, Long from, Integer size) {
         log.info("ItemService search: запрос на поиск вещей по тексту \"{}\"", text);
         List<Item> items;
         if (text == null || text.isBlank()) {
             return Collections.emptyList();
         } else {
             String lowerCaseText = text.toLowerCase();
-            items = itemRepository.search(lowerCaseText);
+            OffsetBasedPageRequest pageable = new OffsetBasedPageRequest(from, size);
+            items = itemRepository.search(lowerCaseText, pageable);
         }
         log.info("ItemService search: выполнен запрос на поиск вещей по тексту \"{}\"", text);
         return items;
@@ -174,7 +196,6 @@ public class ItemServiceImpl implements ItemService {
         }
         comment.setItem(item);
         comment.setAuthor(user);
-        Comment created = commentRepository.save(comment);
-        return created;
+        return commentRepository.save(comment);
     }
 }

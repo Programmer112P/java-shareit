@@ -23,6 +23,8 @@ public class CreateItemDto {
     @NotNull
     private Boolean available;
 
+    private Long requestId;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

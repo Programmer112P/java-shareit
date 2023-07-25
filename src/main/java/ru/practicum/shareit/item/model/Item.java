@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.comment.model.Comment;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
@@ -65,7 +66,11 @@ public class Item {
     @JsonIgnore
     private List<Comment> comments;
 
-    //private ItemRequest request;
+    @ManyToOne
+    @JoinColumn(name = "request_id", referencedColumnName = "id")
+    @ToString.Exclude
+    @JsonIgnore
+    private ItemRequest request;
 
     @Override
     public boolean equals(Object o) {
