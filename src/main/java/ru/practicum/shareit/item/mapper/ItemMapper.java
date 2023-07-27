@@ -22,13 +22,9 @@ public interface ItemMapper {
             expression = "java(createItemRequest(createItemDto.getRequestId()))")
     Item createDtoToModel(CreateItemDto createItemDto);
 
-    List<Item> createDtoListToModelList(List<CreateItemDto> createItemDtoList);
-
     @Mapping(target = "request",
             expression = "java(createItemRequest(itemDto.getRequestId()))")
     Item updateDtoToModel(ItemDto itemDto);
-
-    List<Item> updateDtoListToModelList(List<ItemDto> itemDtoList);
 
     @Mapping(target = "lastBooking",
             expression = "java(bookingDtoFromEntity(item.getLastBooking()))")

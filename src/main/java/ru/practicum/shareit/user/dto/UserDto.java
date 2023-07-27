@@ -5,8 +5,6 @@ import lombok.*;
 import javax.validation.constraints.Email;
 
 @Getter
-@Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
