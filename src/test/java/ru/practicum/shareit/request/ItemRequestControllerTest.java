@@ -45,6 +45,22 @@ class ItemRequestControllerTest {
     }
 
     @Test
+    void create_shouldReturn400_whenBlankDescription() throws Exception {
+        PostItemRequestDto postItemRequestDto = PostItemRequestDto.builder()
+                .description("  ")
+                .build();
+        String requestBody = objectMapper.writeValueAsString(postItemRequestDto);
+
+        mockMvc.perform(post("/requests")
+                        .header("Content-Type", "application/json")
+                        .header("X-Sharer-User-Id", 1)
+                        .content(requestBody))
+                .andExpectAll(
+                        status().isBadRequest()
+                );
+    }
+
+    @Test
     void create_shouldReturn404_whenNorFoundUserId() throws Exception {
         PostItemRequestDto postItemRequestDto = PostItemRequestDto.builder()
                 .description("хочу тирамису")

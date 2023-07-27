@@ -123,6 +123,57 @@ class ItemControllerTest {
     }
 
     @Test
+    void create_shouldReturn400_whenNotValidDto() throws Exception {
+        //name is blank
+        CreateItemDto createItemDto = CreateItemDto.builder()
+                .name("   ")
+                .available(true)
+                .description("new_item_desc")
+                .build();
+        String requestBody = objectMapper.writeValueAsString(createItemDto);
+
+        mockMvc.perform(post("/items")
+                        .header("X-Sharer-User-Id", 112345)
+                        .header("Content-Type", "application/json")
+                        .content(requestBody))
+                .andExpectAll(
+                        status().isBadRequest()
+                );
+
+        //available is null
+        createItemDto = CreateItemDto.builder()
+                .name("name")
+                .available(null)
+                .description("new_item_desc")
+                .build();
+        requestBody = objectMapper.writeValueAsString(createItemDto);
+
+        mockMvc.perform(post("/items")
+                        .header("X-Sharer-User-Id", 112345)
+                        .header("Content-Type", "application/json")
+                        .content(requestBody))
+                .andExpectAll(
+                        status().isBadRequest()
+                );
+
+        //description is blank
+        createItemDto = CreateItemDto.builder()
+                .name("name")
+                .available(true)
+                .description("   ")
+                .build();
+        requestBody = objectMapper.writeValueAsString(createItemDto);
+
+        mockMvc.perform(post("/items")
+                        .header("X-Sharer-User-Id", 112345)
+                        .header("Content-Type", "application/json")
+                        .content(requestBody))
+                .andExpectAll(
+                        status().isBadRequest()
+                );
+    }
+
+    @Test
     void update_shouldReturn200_whenCorrectRequest() throws Exception {
         ItemDto itemDto = ItemDto.builder()
                 .id(2L)
@@ -215,7 +266,7 @@ class ItemControllerTest {
     @Test
     void getById_shouldReturn200_whenCorrectRequest() throws Exception {
         mockMvc.perform(get("/items/{itemId}", 3)
-                        .header("X-Sharer-User-Id", 1)
+                        .header("X-Sharer-User-Id", 3)
                         .header("Content-Type", "application/json"))
                 .andExpectAll(
                         status().isOk(),

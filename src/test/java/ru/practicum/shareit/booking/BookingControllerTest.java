@@ -166,14 +166,14 @@ class BookingControllerTest {
 
     @Test
     void getById_shouldReturn200_whenCorrectRequest() throws Exception {
-        mockMvc.perform(get("/bookings/{bookingId}", 1)
+        mockMvc.perform(get("/bookings/{bookingId}", 3)
                         .header("Content-Type", "application/json")
                         .header("X-Sharer-User-Id", 3))
                 .andExpectAll(
                         status().isOk(),
-                        jsonPath("$.status").value(Status.WAITING.toString()),
-                        jsonPath("$.start").value("2021-10-10T11:30:30"),
-                        jsonPath("$.end").value("2021-10-12T11:30:30")
+                        jsonPath("$.status").value(Status.APPROVED.toString()),
+                        jsonPath("$.start").value("2022-01-01T11:30:30"),
+                        jsonPath("$.end").value("2022-01-10T11:30:30")
                 );
     }
 

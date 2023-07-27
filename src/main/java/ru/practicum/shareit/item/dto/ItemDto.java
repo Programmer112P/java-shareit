@@ -6,7 +6,6 @@ import ru.practicum.shareit.booking.dto.GetItemsBookingDto;
 import ru.practicum.shareit.comment.dto.CommentDto;
 
 import java.util.List;
-import java.util.Objects;
 
 @Getter
 @Setter
@@ -37,17 +36,4 @@ public class ItemDto {
 
     @JsonProperty("comments")
     List<CommentDto> comments;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ItemDto itemDto = (ItemDto) o;
-        return Objects.equals(id, itemDto.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
 }
