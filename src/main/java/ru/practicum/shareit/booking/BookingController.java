@@ -79,8 +79,6 @@ public class BookingController {
         return response;
     }
 
-    //GET /bookings/owner?state={state}
-
     @GetMapping("/owner")
     public List<BookingDto> getAllBookingsOfUserItems(
             @RequestParam(required = false, defaultValue = "0") @Min(0) final long from,

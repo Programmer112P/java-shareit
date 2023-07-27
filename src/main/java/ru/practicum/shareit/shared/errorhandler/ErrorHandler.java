@@ -83,20 +83,6 @@ public class ErrorHandler {
         return new BadRequestResponse(e.getMessage());
     }
 
-    @ExceptionHandler(HttpMessageConversionException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public BadRequestResponse handleHttpMessageConversionException(final HttpMessageConversionException e) {
-        log.error("400 {}", e.getMessage());
-        return new BadRequestResponse(e.getMessage());
-    }
-
-    @ExceptionHandler(MissingRequestHeaderException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public BadRequestResponse handleMissingRequestHeaderException(final MissingRequestHeaderException e) {
-        log.error("400 {}", e.getMessage());
-        return new BadRequestResponse(e.getMessage());
-    }
-
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public BadRequestResponse handleConstraintViolationException(final ConstraintViolationException e) {
@@ -104,10 +90,4 @@ public class ErrorHandler {
         return new BadRequestResponse(e.getMessage());
     }
 
-    @ExceptionHandler(MissingServletRequestParameterException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public BadRequestResponse handleMissingParams(final MissingServletRequestParameterException e) {
-        log.error("400 {}", e.getMessage());
-        return new BadRequestResponse(e.getMessage());
-    }
 }

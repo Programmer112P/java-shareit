@@ -15,7 +15,6 @@ import ru.practicum.shareit.item.model.Item;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
-import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
@@ -103,7 +102,6 @@ public class ItemController {
             @PathVariable(name = "itemId") final Long itemId,
             @RequestBody @Valid CreateCommentDto createCommentDto) {
         log.info("ItemController search: запрос на оставление комментария от пользователя {}", userId);
-        createCommentDto.setCreated(LocalDateTime.now());
         Comment commentToCreate = commentMapper.createDtoToModel(createCommentDto);
         Comment createdComment = itemService.addComment(userId, itemId, commentToCreate);
         CommentDto response = commentMapper.modelToDto(createdComment);

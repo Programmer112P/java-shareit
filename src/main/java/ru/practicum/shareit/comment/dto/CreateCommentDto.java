@@ -17,5 +17,5 @@ public class CreateCommentDto {
     @NotBlank
     private String text;
 
-    private LocalDateTime created;
+    private LocalDateTime created = LocalDateTime.now();
 }

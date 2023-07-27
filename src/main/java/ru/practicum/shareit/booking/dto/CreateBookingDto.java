@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.validation.StartAfterEnd;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 @Data
 @StartAfterEnd
 @NoArgsConstructor
+@Builder
 @AllArgsConstructor
 public class CreateBookingDto {
 

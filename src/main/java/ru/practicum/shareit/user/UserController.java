@@ -36,7 +36,6 @@ public class UserController {
         return response;
     }
 
-    //сделал бы пагинацию, но тесты не пройдет
     @GetMapping
     public List<UserDto> getAll() {
         log.info("UserController getAll: запрос на получение всех пользователей");
@@ -68,7 +67,6 @@ public class UserController {
         return response;
     }
 
-    //Возвращать что-нибудь при удалении?
     @DeleteMapping("/{userId}")
     public void delete(@PathVariable(name = "userId") final Long userId) {
         log.info("UserController: запрос на удаление пользователя с id {}", userId);

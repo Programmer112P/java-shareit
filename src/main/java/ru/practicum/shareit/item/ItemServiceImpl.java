@@ -100,6 +100,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public Item create(final Item itemToCreate, final Long userId) {
         log.info("ItemService create: запрос на создание вещи {} с id пользователя {}", itemToCreate, userId);
         ItemRequest itemRequest = itemToCreate.getRequest();
@@ -124,6 +125,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public Item update(final Item newItem, final Long itemId, final Long userId) {
         log.info("ItemService update: запрос на обновление вещи с id {}", itemId);
         Optional<Item> optionalItem = itemRepository.findById(itemId);
