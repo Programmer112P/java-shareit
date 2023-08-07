@@ -76,7 +76,7 @@ public class BookingController {
         log.info("BookingController getAllBookingsOfUser: запрос на получение всех броней пользователя {}", userId);
         List<Booking> bookings = bookingService.getAllBookingsOfUser(userId, state, from, size);
         List<BookingDto> response = bookingMapper.modelListToDtoList(bookings);
-        response.sort(Comparator.comparing(BookingDto::getId));//и это для тестов постмана
+        response.sort(Comparator.comparing(BookingDto::getStart).reversed());//и это для тестов постмана
         log.info("BookingController getAllBookingsOfUser: выполнен запрос на получение всех броней пользователя {}", userId);
         return response;
     }
