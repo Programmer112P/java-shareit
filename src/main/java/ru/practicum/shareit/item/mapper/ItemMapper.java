@@ -9,6 +9,7 @@ import ru.practicum.shareit.comment.model.Comment;
 import ru.practicum.shareit.item.dto.CreateItemDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.model.ItemRequest;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,13 +18,13 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface ItemMapper {
 
+    @Mapping(target = "request",
+            expression = "java(createItemRequest(createItemDto.getRequestId()))")
     Item createDtoToModel(CreateItemDto createItemDto);
 
-    List<Item> createDtoListToModelList(List<CreateItemDto> createItemDtoList);
-
+    @Mapping(target = "request",
+            expression = "java(createItemRequest(itemDto.getRequestId()))")
     Item updateDtoToModel(ItemDto itemDto);
-
-    List<Item> updateDtoListToModelList(List<ItemDto> itemDtoList);
 
     @Mapping(target = "lastBooking",
             expression = "java(bookingDtoFromEntity(item.getLastBooking()))")
@@ -31,9 +32,22 @@ public interface ItemMapper {
             expression = "java(bookingDtoFromEntity(item.getNextBooking()))")
     @Mapping(target = "comments",
             expression = "java(commentsFromEntity(item.getComments()))")
+    @Mapping(target = "requestId",
+            expression = "java(getRequestId(item.getRequest()))")
     ItemDto modelToDto(Item item);
 
     List<ItemDto> modelListToDtoList(List<Item> itemList);
+
+    default ItemRequest createItemRequest(Long requestId) {
+        return ItemRequest.builder().id(requestId).build();
+    }
+
+    default Long getRequestId(ItemRequest itemRequest) {
+        if (itemRequest == null) {
+            return null;
+        }
+        return itemRequest.getId();
+    }
 
     default GetItemsBookingDto bookingDtoFromEntity(Booking booking) {
         if (booking == null) {

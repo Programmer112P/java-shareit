@@ -14,7 +14,7 @@ import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 
 import javax.validation.Valid;
-import java.time.LocalDateTime;
+import javax.validation.constraints.Min;
 import java.util.Comparator;
 import java.util.List;
 
@@ -36,9 +36,11 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> getAllByUserId(@RequestHeader("X-Sharer-User-Id") final Long userId) {
+    public List<ItemDto> getAllByUserId(@RequestHeader("X-Sharer-User-Id") final Long userId,
+                                        @RequestParam(required = false, defaultValue = "0") @Min(0) final long from,
+                                        @RequestParam(required = false, defaultValue = "20") @Min(1) final int size) {
         log.info("ItemController getAll: запрос на получение всех вещей от пользователя с id {}", userId);
-        List<Item> itemList = itemService.getAllByUserId(userId);
+        List<Item> itemList = itemService.getAllByUserId(userId, from, size);
         List<ItemDto> response = itemMapper.modelListToDtoList(itemList);
         response.sort(Comparator.comparing(ItemDto::getId));//В тестах иначе не проходит, по идее это не нужно
         log.info("ItemController getAll: выполнен запрос на получение всех вещей от пользователя с id {}", userId);
@@ -82,9 +84,13 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemDto> search(@RequestParam(name = "text") final String text) {
+    public List<ItemDto> search(
+            @RequestParam(name = "text") final String text,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) final long from,
+            @RequestParam(required = false, defaultValue = "20") @Min(1) final int size
+    ) {
         log.info("ItemController search: запрос на поиск вещей по тексту \"{}\"", text);
-        List<Item> items = itemService.search(text);
+        List<Item> items = itemService.search(text, from, size);
         List<ItemDto> response = itemMapper.modelListToDtoList(items);
         log.info("ItemController search: выполнен запрос на поиск вещей по тексту \"{}\"", text);
         return response;
@@ -96,7 +102,6 @@ public class ItemController {
             @PathVariable(name = "itemId") final Long itemId,
             @RequestBody @Valid CreateCommentDto createCommentDto) {
         log.info("ItemController search: запрос на оставление комментария от пользователя {}", userId);
-        createCommentDto.setCreated(LocalDateTime.now());
         Comment commentToCreate = commentMapper.createDtoToModel(createCommentDto);
         Comment createdComment = itemService.addComment(userId, itemId, commentToCreate);
         CommentDto response = commentMapper.modelToDto(createdComment);

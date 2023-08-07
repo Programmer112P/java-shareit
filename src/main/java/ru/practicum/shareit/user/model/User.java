@@ -3,11 +3,11 @@ package ru.practicum.shareit.user.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.model.ItemRequest;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import java.util.List;
-import java.util.Objects;
 
 @Getter
 @Setter
@@ -43,16 +43,9 @@ public class User {
     @JsonIgnore
     List<Item> items;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(id, user.id) && Objects.equals(email, user.email);
-    }
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "requestor")
+    @ToString.Exclude
+    @JsonIgnore
+    List<ItemRequest> itemRequests;
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, email);
-    }
 }

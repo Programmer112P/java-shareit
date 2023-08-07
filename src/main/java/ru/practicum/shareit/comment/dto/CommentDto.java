@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class CommentDto {

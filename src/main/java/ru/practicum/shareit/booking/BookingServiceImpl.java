@@ -3,7 +3,6 @@ package ru.practicum.shareit.booking;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.shared.exception.AccessDeniedException;
 import ru.practicum.shareit.booking.exception.BookingAlreadyApprovedException;
 import ru.practicum.shareit.booking.exception.ItemUnavailableException;
 import ru.practicum.shareit.booking.model.Booking;
@@ -11,7 +10,9 @@ import ru.practicum.shareit.booking.model.State;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.model.Status;
+import ru.practicum.shareit.shared.exception.AccessDeniedException;
 import ru.practicum.shareit.shared.exception.NotFoundException;
+import ru.practicum.shareit.shared.pagination.OffsetBasedPageRequest;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
@@ -40,23 +41,25 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public Booking create(Booking bookingToCreate) {
         Long itemId = bookingToCreate.getItem().getId();
-        Optional<Item> item0 = itemRepository.findById(itemId);
-        validateItem(item0);
-        bookingToCreate.setItem(item0.get());
-        Optional<User> booker0 = userRepository.findById(bookingToCreate.getBooker().getId());
-        validateBooker(booker0, bookingToCreate.getItem().getOwner().getId());
-        bookingToCreate.setBooker(booker0.get());
+        Optional<Item> itemOptional = itemRepository.findById(itemId);
+        validateItem(itemOptional);
+        //Я сетаю, потому что мне нужно сначала получить эти поля из БД и провалидировать их
+        //А так у меня будет маппер, который мапит букинг на букинг
+        bookingToCreate.setItem(itemOptional.get());
+        Optional<User> bookerOptional = userRepository.findById(bookingToCreate.getBooker().getId());
+        validateBooker(bookerOptional, bookingToCreate.getItem().getOwner().getId());
+        bookingToCreate.setBooker(bookerOptional.get());
         return bookingRepository.save(bookingToCreate);
     }
 
     @Override
     @Transactional
     public Booking approve(Boolean approved, Long bookingId, Long ownerId) {
-        Optional<Booking> booking0 = bookingRepository.findById(bookingId);
-        if (booking0.isEmpty()) {
+        Optional<Booking> bookingOptional = bookingRepository.findById(bookingId);
+        if (bookingOptional.isEmpty()) {
             throw new NotFoundException("При запросе на подтверждение брони передан несуществующий id");
         }
-        Booking booking = booking0.get();
+        Booking booking = bookingOptional.get();
         if (!Objects.equals(booking.getItem().getOwner().getId(), ownerId)) {
             throw new NotFoundException("При запросе на подтверждение брони передан неверный id владельца");
         }
@@ -73,11 +76,11 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Booking getById(Long bookingId, Long userId) {
-        Optional<Booking> booking0 = bookingRepository.findById(bookingId);
-        if (booking0.isEmpty()) {
+        Optional<Booking> bookingOptional = bookingRepository.findById(bookingId);
+        if (bookingOptional.isEmpty()) {
             throw new NotFoundException("При запросе на получение информации о брони передан неверный id");
         }
-        Booking booking = booking0.get();
+        Booking booking = bookingOptional.get();
         if (!Objects.equals(booking.getBooker().getId(), userId) &&
                 !Objects.equals(booking.getItem().getOwner().getId(), userId)) {
             throw new AccessDeniedException("В запросе на получении информации о брони передан id пользователя без доступа");
@@ -86,71 +89,73 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<Booking> getAllBookingsOfUser(Long userId, State state) {
-        Optional<User> user0 = userRepository.findById(userId);
-        if (user0.isEmpty()) {
+    public List<Booking> getAllBookingsOfUser(Long userId, State state, Long from, Integer size) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
             throw new NotFoundException("В запросе на получение всех броней пользователей передан несуществующий id");
         }
-        User booker = user0.get();
+        User booker = userOptional.get();
+        OffsetBasedPageRequest pageable = new OffsetBasedPageRequest(from, size);
         switch (state) {
             case PAST:
-                return bookingRepository.findAllByEndBeforeAndBookerAndStatusOrderByStartDesc(LocalDateTime.now(), booker, Status.APPROVED);
+                return bookingRepository.findAllByEndBeforeAndBookerAndStatusOrderByStartDesc(LocalDateTime.now(), booker, Status.APPROVED, pageable);
             case FUTURE:
-                return bookingRepository.findAllByStartAfterAndBookerAndStatusInOrderByStartDesc(LocalDateTime.now(), booker, List.of(Status.APPROVED, Status.WAITING));
+                return bookingRepository.findAllByStartAfterAndBookerAndStatusInOrderByStartDesc(LocalDateTime.now(), booker, List.of(Status.APPROVED, Status.WAITING), pageable);
             case CURRENT:
                 return bookingRepository.findAllByStartBeforeAndEndAfterAndBookerOrderByStartDesc(
-                        LocalDateTime.now(), LocalDateTime.now(), booker);
+                        LocalDateTime.now(), LocalDateTime.now(), booker, pageable);
             case WAITING:
-                return bookingRepository.findAllByStatusAndBookerOrderByStartDesc(Status.WAITING, booker);
+                return bookingRepository.findAllByStatusAndBookerOrderByStartDesc(Status.WAITING, booker, pageable);
             case REJECTED:
-                return bookingRepository.findAllByStatusAndBookerOrderByStartDesc(Status.REJECTED, booker);
+                return bookingRepository.findAllByStatusAndBookerOrderByStartDesc(Status.REJECTED, booker, pageable);
             default:
-                return bookingRepository.findAllByBookerOrderByStartDesc(booker);
+                return bookingRepository.findAllByBookerOrderByStartDesc(booker, pageable);
         }
     }
 
     @Override
-    public List<Booking> getAllBookingsOfUserItems(Long userId, State state) {
-        Optional<User> user0 = userRepository.findById(userId);
-        if (user0.isEmpty()) {
+    public List<Booking> getAllBookingsOfUserItems(Long userId, State state, Long from, Integer size) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
             throw new NotFoundException("В запросе на получение всех броней пользователей передан несуществующий id");
         }
-        User booker = user0.get();
+        User booker = userOptional.get();
         if (booker.getItems().isEmpty()) {
             return Collections.emptyList();
         }
         List<Item> items = booker.getItems();
+        OffsetBasedPageRequest pageable = new OffsetBasedPageRequest(from, size);
         switch (state) {
             case PAST:
-                return bookingRepository.findAllByItemInAndEndBeforeOrderByStartDesc(items, LocalDateTime.now());
+                return bookingRepository.findAllByItemInAndEndBeforeOrderByStartDesc(items, LocalDateTime.now(), pageable);
             case FUTURE:
-                return bookingRepository.findAllByItemInAndStartAfterOrderByStartDesc(items, LocalDateTime.now());
+                return bookingRepository.findAllByItemInAndStartAfterOrderByStartDesc(items, LocalDateTime.now(), pageable);
             case CURRENT:
                 return bookingRepository.findAllByStartBeforeAndEndAfterAndItemInOrderByStartDesc(
                         LocalDateTime.now(),
                         LocalDateTime.now(),
-                        items);
+                        items,
+                        pageable);
             case WAITING:
-                return bookingRepository.findAllByStatusAndItemInOrderByStartDesc(Status.WAITING, items);
+                return bookingRepository.findAllByStatusAndItemInOrderByStartDesc(Status.WAITING, items, pageable);
             case REJECTED:
-                return bookingRepository.findAllByStatusAndItemInOrderByStartDesc(Status.REJECTED, items);
+                return bookingRepository.findAllByStatusAndItemInOrderByStartDesc(Status.REJECTED, items, pageable);
             default:
-                return bookingRepository.findAllByItemInOrderByStartDesc(items);
+                return bookingRepository.findAllByItemInOrderByStartDesc(items, pageable);
         }
     }
 
-    private void validateBooker(Optional<User> booker0, Long ownerId) {
-        if (booker0.isEmpty() || Objects.equals(booker0.get().getId(), ownerId)) {
+    private void validateBooker(Optional<User> bookerOptional, Long ownerId) {
+        if (bookerOptional.isEmpty() || Objects.equals(bookerOptional.get().getId(), ownerId)) {
             throw new NotFoundException("При запросе на создание брони передан несуществующий id пользователя");
         }
     }
 
-    //Мне не нравится валидация с пробрасыванием исключений, но лучше я не придумал
-    private void validateItem(Optional<Item> item0) {
-        if (item0.isEmpty()) {
+    private void validateItem(Optional<Item> itemOptional) {
+        if (itemOptional.isEmpty()) {
             throw new NotFoundException("При запросе на создание брони передан несуществующий id вещи");
         }
-        Item item = item0.get();
+        Item item = itemOptional.get();
         if (!item.getAvailable()) {
             throw new ItemUnavailableException("При запросе за создание брони передан вещь недоступна для бронирования");
         }

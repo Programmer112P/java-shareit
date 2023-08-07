@@ -2,10 +2,7 @@ package ru.practicum.shareit.shared.errorhandler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.MissingRequestHeaderException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -83,20 +80,6 @@ public class ErrorHandler {
         return new BadRequestResponse(e.getMessage());
     }
 
-    @ExceptionHandler(HttpMessageConversionException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public BadRequestResponse handleHttpMessageConversionException(final HttpMessageConversionException e) {
-        log.error("400 {}", e.getMessage());
-        return new BadRequestResponse(e.getMessage());
-    }
-
-    @ExceptionHandler(MissingRequestHeaderException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public BadRequestResponse handleMissingRequestHeaderException(final MissingRequestHeaderException e) {
-        log.error("400 {}", e.getMessage());
-        return new BadRequestResponse(e.getMessage());
-    }
-
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public BadRequestResponse handleConstraintViolationException(final ConstraintViolationException e) {
@@ -104,10 +87,4 @@ public class ErrorHandler {
         return new BadRequestResponse(e.getMessage());
     }
 
-    @ExceptionHandler(MissingServletRequestParameterException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public BadRequestResponse handleMissingParams(final MissingServletRequestParameterException e) {
-        log.error("400 {}", e.getMessage());
-        return new BadRequestResponse(e.getMessage());
-    }
 }
