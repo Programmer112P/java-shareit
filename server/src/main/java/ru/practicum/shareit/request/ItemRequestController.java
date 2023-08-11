@@ -2,21 +2,17 @@ package ru.practicum.shareit.request;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.PostItemRequestDto;
 import ru.practicum.shareit.request.dto.ResponseItemRequestDto;
 import ru.practicum.shareit.request.mapper.ItemRequestMapper;
 import ru.practicum.shareit.request.model.ItemRequest;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
 import java.util.List;
 
 @RestController
 @RequestMapping(path = "/requests")
 @Slf4j
-@Validated
 public class ItemRequestController {
 
     private final ItemRequestMapper itemRequestMapper;
@@ -30,7 +26,7 @@ public class ItemRequestController {
 
     @PostMapping
     public ResponseItemRequestDto create(
-            @RequestBody @Valid final PostItemRequestDto postItemRequestDto,
+            @RequestBody final PostItemRequestDto postItemRequestDto,
             @RequestHeader("X-Sharer-User-Id") final Long userId) {
         log.info("ItemRequestController create: запрос на создание itemRequest {}", postItemRequestDto);
         ItemRequest itemRequest = itemRequestMapper.dtoToModel(postItemRequestDto);
@@ -63,9 +59,9 @@ public class ItemRequestController {
 
     @GetMapping("/all")
     public List<ResponseItemRequestDto> getPage(
-            @RequestParam(required = false, defaultValue = "0") @Min(0) final long from,
+            @RequestParam(required = false, defaultValue = "0") final long from,
             //дефолтное значение не дали, поставил сам рандомное
-            @RequestParam(required = false, defaultValue = "20") @Min(1) final int size,
+            @RequestParam(required = false, defaultValue = "20") final int size,
             @RequestHeader("X-Sharer-User-Id") final Long userId
     ) {
         log.info("ItemRequestController getPage: запрос на получение страницы запросов from {}, size {}", from, size);

@@ -2,18 +2,15 @@ package ru.practicum.shareit.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.CreateUserDto;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @Slf4j
-@Validated
 @RestController
 @RequestMapping(path = "/users")
 public class UserController {
@@ -46,7 +43,7 @@ public class UserController {
     }
 
     @PostMapping()
-    public UserDto create(@RequestBody @Valid final CreateUserDto createUserDto) {
+    public UserDto create(@RequestBody final CreateUserDto createUserDto) {
         log.info("UserController create: запрос на создание пользователя {}", createUserDto);
         User userToCreate = userMapper.createDtoToUser(createUserDto);
         User createdUser = userService.create(userToCreate);

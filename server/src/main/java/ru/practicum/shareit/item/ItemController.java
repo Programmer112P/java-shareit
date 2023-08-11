@@ -2,7 +2,6 @@ package ru.practicum.shareit.item;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.comment.dto.CreateCommentDto;
@@ -13,15 +12,12 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
 import java.util.Comparator;
 import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping("/items")
-@Validated
 public class ItemController {
 
     private final ItemService itemService;
@@ -37,8 +33,8 @@ public class ItemController {
 
     @GetMapping
     public List<ItemDto> getAllByUserId(@RequestHeader("X-Sharer-User-Id") final Long userId,
-                                        @RequestParam(required = false, defaultValue = "0") @Min(0) final long from,
-                                        @RequestParam(required = false, defaultValue = "20") @Min(1) final int size) {
+                                        @RequestParam(required = false, defaultValue = "0") final long from,
+                                        @RequestParam(required = false, defaultValue = "20") final int size) {
         log.info("ItemController getAll: запрос на получение всех вещей от пользователя с id {}", userId);
         List<Item> itemList = itemService.getAllByUserId(userId, from, size);
         List<ItemDto> response = itemMapper.modelListToDtoList(itemList);
@@ -60,7 +56,7 @@ public class ItemController {
 
     @PostMapping
     public ItemDto create(
-            @RequestBody @Valid final CreateItemDto createItemDto,
+            @RequestBody final CreateItemDto createItemDto,
             @RequestHeader("X-Sharer-User-Id") final Long userId) {
         log.info("ItemController create: запрос на создание вещи {}", createItemDto);
         Item itemToCreate = itemMapper.createDtoToModel(createItemDto);
@@ -72,7 +68,7 @@ public class ItemController {
 
     @PatchMapping("/{itemId}")
     public ItemDto update(
-            @RequestBody @Valid final ItemDto itemDto,
+            @RequestBody final ItemDto itemDto,
             @PathVariable(name = "itemId") final Long itemId,
             @RequestHeader("X-Sharer-User-Id") final Long userId) {
         log.info("ItemController update: запрос на обновление вещи с id {}", itemId);
@@ -86,8 +82,8 @@ public class ItemController {
     @GetMapping("/search")
     public List<ItemDto> search(
             @RequestParam(name = "text") final String text,
-            @RequestParam(required = false, defaultValue = "0") @Min(0) final long from,
-            @RequestParam(required = false, defaultValue = "20") @Min(1) final int size
+            @RequestParam(required = false, defaultValue = "0") final long from,
+            @RequestParam(required = false, defaultValue = "20") final int size
     ) {
         log.info("ItemController search: запрос на поиск вещей по тексту \"{}\"", text);
         List<Item> items = itemService.search(text, from, size);
@@ -100,7 +96,7 @@ public class ItemController {
     public CommentDto addComment(
             @RequestHeader("X-Sharer-User-Id") final Long userId,
             @PathVariable(name = "itemId") final Long itemId,
-            @RequestBody @Valid CreateCommentDto createCommentDto) {
+            @RequestBody CreateCommentDto createCommentDto) {
         log.info("ItemController addComment: запрос на оставление комментария от пользователя {}", userId);
         Comment commentToCreate = commentMapper.createDtoToModel(createCommentDto);
         Comment createdComment = itemService.addComment(userId, itemId, commentToCreate);

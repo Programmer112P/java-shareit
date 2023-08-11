@@ -2,7 +2,6 @@ package ru.practicum.shareit.booking;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.CreateBookingDto;
@@ -10,14 +9,11 @@ import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.State;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
 import java.util.Comparator;
 import java.util.List;
 
 @RestController
 @Slf4j
-@Validated
 @RequestMapping(path = "/bookings")
 public class BookingController {
 
@@ -32,10 +28,9 @@ public class BookingController {
 
     @PostMapping
     public BookingDto create(
-            @RequestBody @Valid final CreateBookingDto createBookingDto,
+            @RequestBody final CreateBookingDto createBookingDto,
             @RequestHeader("X-Sharer-User-Id") final Long bookerId) {
         log.info("BookingController createBooking: запрос на бронирование {}", createBookingDto);
-        //А как мне не сетать это поле? Оно приходит отдельно хэдером
         createBookingDto.setBookerId(bookerId);
         Booking bookingToCreate = bookingMapper.createDtoToModel(createBookingDto);
         Booking createdBooking = bookingService.create(bookingToCreate);
@@ -69,8 +64,8 @@ public class BookingController {
 
     @GetMapping
     public List<BookingDto> getAllBookingsOfUser(
-            @RequestParam(required = false, defaultValue = "0") @Min(0) final long from,
-            @RequestParam(required = false, defaultValue = "20") @Min(1) final int size,
+            @RequestParam(required = false, defaultValue = "0") final long from,
+            @RequestParam(required = false, defaultValue = "20")  final int size,
             @RequestHeader("X-Sharer-User-Id") final Long userId,
             @RequestParam(required = false, defaultValue = "ALL") State state) {
         log.info("BookingController getAllBookingsOfUser: запрос на получение всех броней пользователя {}", userId);
@@ -83,8 +78,8 @@ public class BookingController {
 
     @GetMapping("/owner")
     public List<BookingDto> getAllBookingsOfUserItems(
-            @RequestParam(required = false, defaultValue = "0") @Min(0) final long from,
-            @RequestParam(required = false, defaultValue = "20") @Min(1) final int size,
+            @RequestParam(required = false, defaultValue = "0")  final long from,
+            @RequestParam(required = false, defaultValue = "20")  final int size,
             @RequestHeader("X-Sharer-User-Id") final Long userId,
             @RequestParam(required = false, defaultValue = "ALL") State state) {
         log.info("BookingController getAllBookingsOfUser: запрос на получение всех броней на вещи пользователя {}", userId);

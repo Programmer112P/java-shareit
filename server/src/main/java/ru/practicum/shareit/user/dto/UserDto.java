@@ -1,8 +1,9 @@
 package ru.practicum.shareit.user.dto;
 
-import lombok.*;
-
-import javax.validation.constraints.Email;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
@@ -14,7 +15,6 @@ public class UserDto {
 
     private String name;
 
-    @Email
     private String email;
 
 }

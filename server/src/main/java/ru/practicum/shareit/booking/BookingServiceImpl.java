@@ -43,8 +43,6 @@ public class BookingServiceImpl implements BookingService {
         Long itemId = bookingToCreate.getItem().getId();
         Optional<Item> itemOptional = itemRepository.findById(itemId);
         validateItem(itemOptional);
-        //Я сетаю, потому что мне нужно сначала получить эти поля из БД и провалидировать их
-        //А так у меня будет маппер, который мапит букинг на букинг
         bookingToCreate.setItem(itemOptional.get());
         Optional<User> bookerOptional = userRepository.findById(bookingToCreate.getBooker().getId());
         validateBooker(bookerOptional, bookingToCreate.getItem().getOwner().getId());
