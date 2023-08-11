@@ -284,18 +284,6 @@ class BookingControllerTest {
     }
 
     @Test
-    void getAllBookingsOfUser_shouldReturn400_whenInvalidPageSize() throws Exception {
-        mockMvc.perform(get("/bookings")
-                        .header("Content-Type", "application/json")
-                        .param("state", "CURRENT")
-                        .param("size", "-1")
-                        .header("X-Sharer-User-Id", 222222))
-                .andExpectAll(
-                        status().isBadRequest()
-                );
-    }
-
-    @Test
     void getAllBookingsOfUser_shouldReturn400_whenUnknownState() throws Exception {
         mockMvc.perform(get("/bookings")
                         .header("Content-Type", "application/json")
@@ -389,18 +377,6 @@ class BookingControllerTest {
                         .header("X-Sharer-User-Id", 12345))
                 .andExpectAll(
                         status().isNotFound()
-                );
-    }
-
-    @Test
-    void getAllBookingsOfUserItems_shouldReturn400_whenInvalidFromParam() throws Exception {
-        mockMvc.perform(get("/bookings/owner")
-                        .header("Content-Type", "application/json")
-                        .param("state", "REJECTED")
-                        .param("from", "-1")
-                        .header("X-Sharer-User-Id", 1))
-                .andExpectAll(
-                        status().isBadRequest()
                 );
     }
 

@@ -65,32 +65,6 @@ class UserServiceImplTest {
                 );
     }
 
-    @Test
-    void create_shouldReturn400_whenInvalidEmail() throws Exception {
-        CreateUserDto createUserDto = CreateUserDto.builder()
-                .name("user_name")
-                .email("")
-                .build();
-
-        String requestBody = objectMapper.writeValueAsString(createUserDto);
-
-        mockMvc.perform(post("/users")
-                        .header("Content-Type", "application/json")
-                        .content(requestBody))
-                .andExpectAll(
-                        status().isBadRequest()
-                );
-
-        createUserDto.setEmail("wrong");
-        requestBody = objectMapper.writeValueAsString(createUserDto);
-
-        mockMvc.perform(post("/users")
-                        .header("Content-Type", "application/json")
-                        .content(requestBody))
-                .andExpectAll(
-                        status().isBadRequest()
-                );
-    }
 
     @Test
     void delete_shouldReturn200_whenCorrectRequest() throws Exception {

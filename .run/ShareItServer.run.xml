@@ -5,7 +5,7 @@
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="ru.practicum.shareit.*" />
-        <option name="ENABLED" value="true" />
+        <option name="ENABLED" value="false" />
       </pattern>
     </extension>
     <method v="2">
